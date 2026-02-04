@@ -1,0 +1,113 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+/* Добавь в globals.css после @tailwind directives */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply bg-gradient-to-br from-vector-light via-white to-blue-50 text-vector-dark;
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-display font-bold tracking-tight;
+  }
+  
+  h1 {
+    @apply text-4xl md:text-5xl lg:text-6xl bg-gradient-to-r from-vector-electric to-vector-purple bg-clip-text text-transparent;
+  }
+  
+  h2 {
+    @apply text-3xl md:text-4xl text-vector-deep-blue;
+  }
+  
+  h3 {
+    @apply text-2xl md:text-3xl text-vector-dark;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply px-6 py-3 bg-gradient-to-r from-vector-electric to-vector-purple text-white font-semibold rounded-xl 
+           shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 
+           hover:brightness-110 active:brightness-95;
+  }
+  
+  .btn-secondary {
+    @apply px-6 py-3 bg-white/80 backdrop-blur-sm border-2 border-vector-electric text-vector-electric 
+           font-semibold rounded-xl shadow-sm hover:shadow-md hover:bg-white transition-all duration-200;
+  }
+  
+  .glass-card {
+    @apply bg-white/70 backdrop-blur-lg border border-white/40 rounded-2xl shadow-soft 
+           hover:shadow-medium transition-shadow duration-300;
+  }
+  
+  .gradient-card {
+    @apply bg-gradient-to-br from-white to-blue-50 border border-blue-100 rounded-2xl 
+           shadow-soft hover:shadow-medium transition-all duration-300;
+  }
+  
+  .input-modern {
+    @apply w-full px-4 py-3 rounded-xl border border-vector-light-gray bg-white/50 
+           focus:outline-none focus:ring-2 focus:ring-vector-electric focus:border-transparent 
+           placeholder:text-vector-medium transition-all duration-200;
+  }
+  
+  .nav-link {
+    @apply text-vector-dark hover:text-vector-electric font-medium transition-colors 
+           relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 
+           after:bg-vector-electric after:transition-all hover:after:w-full;
+  }
+  
+  .card-hover {
+    @apply hover:scale-[1.02] hover:-translate-y-1 transition-transform duration-300;
+  }
+  
+  .badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
+  }
+  
+  .badge-success {
+    @apply bg-green-100 text-green-800;
+  }
+  
+  .badge-warning {
+    @apply bg-yellow-100 text-yellow-800;
+  }
+  
+  .badge-info {
+    @apply bg-blue-100 text-blue-800;
+  }
+}
+
+/* Кастомные стили */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-vector-light;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-vector-electric rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-vector-deep-blue;
+}
+
+::selection {
+  @apply bg-vector-electric/30 text-vector-dark;
+}

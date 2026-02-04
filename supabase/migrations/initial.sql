@@ -1,0 +1,1 @@
+CREATE TABLE profiles (id uuid PRIMARY KEY, role text); CREATE TABLE contests (id uuid PRIMARY KEY, title text, status text); CREATE TABLE news (id uuid PRIMARY KEY, title text);

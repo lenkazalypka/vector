@@ -43,16 +43,20 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/auth/login', request.url))
     }
 
-    // Проверяем, админ ли пользователь
+    // Проверяем, админ ли пользователь (ПО role, НЕ is_admin!)
     const { data: profile, error } = await supabase
       .from('profiles')
-      .select('is_admin')
+      .select('role')  // ← ЗАПРАШИВАЕМ role!
       .eq('id', user.id)
       .single()
 
     // Если ошибка или не админ - перенаправляем
-    if (error || !profile?.is_admin) {
-      console.error('Admin access denied:', error?.message || 'User is not admin')
+    if (error || profile?.role !== 'admin') {
+      console.error('Admin access denied:', {
+        error: error?.message,
+        role: profile?.role,
+        path: request.nextUrl.pathname
+      })
       return NextResponse.redirect(new URL('/profile', request.url))
     }
   }
@@ -64,6 +68,6 @@ export const config = {
   matcher: [
     '/profile/:path*',
     '/auth/:path*',
-    '/admin/:path*', // Добавляем защиту админских маршрутов
+    '/admin/:path*',
   ],
 }

@@ -18,20 +18,29 @@ export default function AdminPage() {
       if (session?.user) {
         setUser(session.user)
         
-        const { data: profileData } = await supabase
+        const { data: profileData, error } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', session.user.id)
           .single()
         
+        if (error) {
+          console.error('Ошибка загрузки профиля админа:', error)
+          router.push('/profile')
+          return
+        }
+        
         setProfile(profileData)
 
-        // Если пользователь не админ, перенаправляем
-        if (!profileData?.is_admin) {
+        // Если пользователь не админ, перенаправляем (ПРОВЕРКА ПО role!)
+        if (profileData?.role !== 'admin') {
+          console.log('Пользователь не админ, роль:', profileData?.role)
           router.push('/profile')
+          return
         }
       } else {
         router.push('/auth/login')
+        return
       }
       setLoading(false)
     }
@@ -41,8 +50,8 @@ export default function AdminPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
       </div>
     )
   }
@@ -58,6 +67,7 @@ export default function AdminPage() {
               <div>
                 <h1 className="text-2xl font-bold">Панель администратора</h1>
                 <p className="text-sm opacity-80">Добро пожаловать, {profile?.full_name || 'Админ'}</p>
+                <p className="text-xs opacity-60">Роль: {profile?.role}</p>
               </div>
             </div>
             <button
@@ -127,19 +137,31 @@ export default function AdminPage() {
                 Быстрые действия
               </h2>
               <div className="grid grid-cols-2 gap-4">
-                <button className="bg-blue-50 hover:bg-blue-100 text-blue-700 p-4 rounded-lg transition-colors flex items-center">
+                <button 
+                  onClick={() => router.push('/admin/users')}
+                  className="bg-blue-50 hover:bg-blue-100 text-blue-700 p-4 rounded-lg transition-colors flex items-center"
+                >
                   <Users className="mr-3 h-5 w-5" />
                   Управление пользователями
                 </button>
-                <button className="bg-green-50 hover:bg-green-100 text-green-700 p-4 rounded-lg transition-colors flex items-center">
+                <button 
+                  onClick={() => router.push('/admin/contests')}
+                  className="bg-green-50 hover:bg-green-100 text-green-700 p-4 rounded-lg transition-colors flex items-center"
+                >
                   <Trophy className="mr-3 h-5 w-5" />
                   Создать конкурс
                 </button>
-                <button className="bg-yellow-50 hover:bg-yellow-100 text-yellow-700 p-4 rounded-lg transition-colors flex items-center">
+                <button 
+                  onClick={() => router.push('/admin/moderation')}
+                  className="bg-yellow-50 hover:bg-yellow-100 text-yellow-700 p-4 rounded-lg transition-colors flex items-center"
+                >
                   <FileText className="mr-3 h-5 w-5" />
                   Модерация работ
                 </button>
-                <button className="bg-purple-50 hover:bg-purple-100 text-purple-700 p-4 rounded-lg transition-colors flex items-center">
+                <button 
+                  onClick={() => router.push('/admin/mailing')}
+                  className="bg-purple-50 hover:bg-purple-100 text-purple-700 p-4 rounded-lg transition-colors flex items-center"
+                >
                   <Mail className="mr-3 h-5 w-5" />
                   Рассылка
                 </button>
@@ -222,6 +244,12 @@ export default function AdminPage() {
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Последний бэкап</span>
                   <span className="text-sm">Сегодня, 03:00</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Ваша роль</span>
+                  <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded text-sm">
+                    {profile?.role || 'user'}
+                  </span>
                 </div>
               </div>
             </div>

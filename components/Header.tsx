@@ -20,12 +20,21 @@ export default function Header() {
       setUser(session?.user ?? null)
       
       if (session?.user) {
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single()
-        setProfile(profileData)
+        try {
+          const { data: profileData, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single()
+          
+          if (error) {
+            console.error('Ошибка загрузки профиля:', error)
+          } else {
+            setProfile(profileData)
+          }
+        } catch (err) {
+          console.error('Ошибка при запросе профиля:', err)
+        }
       }
       
       setLoading(false)
@@ -38,12 +47,16 @@ export default function Header() {
         setUser(session?.user ?? null)
         
         if (session?.user) {
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single()
-          setProfile(profileData)
+          try {
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .single()
+            setProfile(profileData)
+          } catch (err) {
+            console.error('Ошибка при обновлении профиля:', err)
+          }
         } else {
           setProfile(null)
         }
@@ -91,8 +104,8 @@ export default function Header() {
               <div className="h-8 w-20 bg-gray-200 rounded animate-pulse"></div>
             ) : user ? (
               <div className="flex items-center space-x-4">
-                {/* Кнопка Админки - только для админов */}
-                {profile?.is_admin && (
+                {/* Кнопка Админки - только для админов (ПРОВЕРКА ПО role!) */}
+                {profile?.role === 'admin' && (
                   <Link 
                     href="/admin" 
                     className="flex items-center space-x-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:opacity-90 px-4 py-2 rounded-lg transition-all"

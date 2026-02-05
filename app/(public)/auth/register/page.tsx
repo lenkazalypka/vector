@@ -45,24 +45,32 @@ export default function RegisterPage() {
         options: {
           data: {
             full_name: formData.full_name,
+            child_name: formData.child_name,
+            phone: formData.phone,
           },
           emailRedirectTo: `${window.location.origin}/auth/callback`,
         },
       })
 
       if (authError) {
-        // Проверяем конкретные ошибки
         if (authError.message.includes('already registered')) {
           throw new Error('Пользователь с таким email уже существует')
+        }
+        if (authError.message.includes('rate limit')) {
+          throw new Error('Слишком много попыток. Подождите 10 минут.')
         }
         throw authError
       }
 
-      // 2. Проверяем, есть ли админы в системе
-      const { count } = await supabase
+      // 2. Проверяем, есть ли админы в системе (ПО role, НЕ is_admin!)
+      const { count, error: countError } = await supabase
         .from('profiles')
         .select('*', { count: 'exact', head: true })
-        .eq('is_admin', true)
+        .eq('role', 'admin')  // ← ИЩЕМ ПО role!
+
+      if (countError) {
+        console.error('Ошибка проверки админов:', countError)
+      }
 
       // Если админов нет - делаем первого пользователя админом
       const isFirstUser = count === 0
@@ -82,10 +90,8 @@ export default function RegisterPage() {
             consent_terms: formData.consent_terms,
             consent_privacy: formData.consent_privacy,
             consent_personal_data: formData.consent_personal_data,
-            is_admin: isFirstUser, // Первый пользователь = админ!
+            role: isFirstUser ? 'admin' : 'user',  // ← ИСПОЛЬЗУЕМ role!
             consent_given_at: new Date().toISOString(),
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
           })
 
         if (profileError) {
@@ -95,7 +101,7 @@ export default function RegisterPage() {
           await supabase.auth.signOut()
           
           if (profileError.message.includes('row-level security')) {
-            throw new Error('Ошибка безопасности. Пожалуйста, сообщите администратору.')
+            throw new Error('Ошибка безопасности. Проверьте RLS политики в Supabase.')
           }
           throw profileError
         }
@@ -103,13 +109,12 @@ export default function RegisterPage() {
         // 4. Принудительный редирект на профиль
         setTimeout(() => {
           window.location.href = '/profile'
-        }, 500)
+        }, 1000)
       }
     } catch (err: any) {
       console.error('Registration error:', err)
       setError(err.message || 'Ошибка при регистрации')
       
-      // Автоматическая очистка ошибки через 5 секунд
       setTimeout(() => {
         setError(null)
       }, 5000)
@@ -118,21 +123,15 @@ export default function RegisterPage() {
     }
   }
 
-  // Функция для валидации email
-  const validateEmail = (email: string) => {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    return re.test(email)
-  }
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-blue-50 py-12 px-4">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center space-x-2 mb-4 group">
-            <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-vector-electric-blue to-vector-teal flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow">
+            <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-blue-600 to-teal-500 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow">
               <span className="font-accent font-bold text-xl text-white">→</span>
             </div>
-            <span className="font-accent text-2xl font-bold bg-gradient-to-r from-vector-electric-blue to-vector-teal bg-clip-text text-transparent">
+            <span className="font-accent text-2xl font-bold bg-gradient-to-r from-blue-600 to-teal-500 bg-clip-text text-transparent">
               ВЕКТОР
             </span>
           </Link>
@@ -148,10 +147,6 @@ export default function RegisterPage() {
                   <AlertCircle className="h-5 w-5 mr-3 mt-0.5 flex-shrink-0" />
                   <div>
                     <p className="font-medium">{error}</p>
-                    <p className="text-sm mt-1 opacity-90">
-                      {error.includes('безопасности') && 'Проверьте политики RLS в Supabase'}
-                      {error.includes('уже существует') && 'Попробуйте войти или восстановить пароль'}
-                    </p>
                   </div>
                 </div>
               )}
@@ -164,17 +159,10 @@ export default function RegisterPage() {
                   <input
                     type="email"
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-vector-electric-blue focus:border-transparent outline-none transition-all"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                     placeholder="example@mail.ru"
                     value={formData.email}
-                    onChange={(e) => {
-                      setFormData({ ...formData, email: e.target.value })
-                      if (e.target.value && !validateEmail(e.target.value)) {
-                        setError('Введите корректный email')
-                      } else if (error?.includes('email')) {
-                        setError(null)
-                      }
-                    }}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   />
                 </div>
 
@@ -187,7 +175,7 @@ export default function RegisterPage() {
                       type={showPassword ? "text" : "password"}
                       required
                       minLength={6}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-vector-electric-blue focus:border-transparent outline-none transition-all pr-12"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all pr-12"
                       placeholder="Не менее 6 символов"
                       value={formData.password}
                       onChange={(e) => setFormData({ ...formData, password: e.target.value })}
@@ -211,7 +199,7 @@ export default function RegisterPage() {
                     <input
                       type="text"
                       required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-vector-electric-blue focus:border-transparent outline-none transition-all"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                       placeholder="Иванов Иван Иванович"
                       value={formData.full_name}
                       onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
@@ -225,7 +213,7 @@ export default function RegisterPage() {
                     <input
                       type="text"
                       required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-vector-electric-blue focus:border-transparent outline-none transition-all"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                       placeholder="Иван"
                       value={formData.child_name}
                       onChange={(e) => setFormData({ ...formData, child_name: e.target.value })}
@@ -243,7 +231,7 @@ export default function RegisterPage() {
                       required
                       min="1"
                       max="120"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-vector-electric-blue focus:border-transparent outline-none transition-all"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                       placeholder="7"
                       value={formData.age}
                       onChange={(e) => setFormData({ ...formData, age: e.target.value })}
@@ -257,7 +245,7 @@ export default function RegisterPage() {
                     <input
                       type="text"
                       required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-vector-electric-blue focus:border-transparent outline-none transition-all"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                       placeholder="Москва"
                       value={formData.city}
                       onChange={(e) => setFormData({ ...formData, city: e.target.value })}
@@ -272,7 +260,7 @@ export default function RegisterPage() {
                   <input
                     type="tel"
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-vector-electric-blue focus:border-transparent outline-none transition-all"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                     placeholder="+7 (999) 123-45-67"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
@@ -290,10 +278,10 @@ export default function RegisterPage() {
                     id="consent_terms"
                     checked={formData.consent_terms}
                     onChange={(e) => setFormData({ ...formData, consent_terms: e.target.checked })}
-                    className="mt-1 h-5 w-5 text-vector-electric-blue focus:ring-vector-electric-blue rounded"
+                    className="mt-1 h-5 w-5 text-blue-600 focus:ring-blue-500 rounded"
                   />
                   <label htmlFor="consent_terms" className="ml-3 text-sm text-gray-700">
-                    Я принимаю <Link href="/legal/terms" className="text-vector-electric-blue hover:underline font-medium">Пользовательское соглашение</Link> *
+                    Я принимаю <Link href="/legal/terms" className="text-blue-600 hover:underline font-medium">Пользовательское соглашение</Link> *
                   </label>
                 </div>
 
@@ -303,10 +291,10 @@ export default function RegisterPage() {
                     id="consent_privacy"
                     checked={formData.consent_privacy}
                     onChange={(e) => setFormData({ ...formData, consent_privacy: e.target.checked })}
-                    className="mt-1 h-5 w-5 text-vector-electric-blue focus:ring-vector-electric-blue rounded"
+                    className="mt-1 h-5 w-5 text-blue-600 focus:ring-blue-500 rounded"
                   />
                   <label htmlFor="consent_privacy" className="ml-3 text-sm text-gray-700">
-                    Я соглашаюсь с <Link href="/legal/privacy" className="text-vector-electric-blue hover:underline font-medium">Политикой конфиденциальности</Link> *
+                    Я соглашаюсь с <Link href="/legal/privacy" className="text-blue-600 hover:underline font-medium">Политикой конфиденциальности</Link> *
                   </label>
                 </div>
 
@@ -316,10 +304,10 @@ export default function RegisterPage() {
                     id="consent_personal_data"
                     checked={formData.consent_personal_data}
                     onChange={(e) => setFormData({ ...formData, consent_personal_data: e.target.checked })}
-                    className="mt-1 h-5 w-5 text-vector-electric-blue focus:ring-vector-electric-blue rounded"
+                    className="mt-1 h-5 w-5 text-blue-600 focus:ring-blue-500 rounded"
                   />
                   <label htmlFor="consent_personal_data" className="ml-3 text-sm text-gray-700">
-                    Я даю согласие на <Link href="/legal/consent" className="text-vector-electric-blue hover:underline font-medium">обработку персональных данных</Link> *
+                    Я даю согласие на <Link href="/legal/consent" className="text-blue-600 hover:underline font-medium">обработку персональных данных</Link> *
                   </label>
                 </div>
               </div>
@@ -345,7 +333,7 @@ export default function RegisterPage() {
               <div className="text-center pt-4 border-t border-gray-200">
                 <p className="text-gray-600">
                   Уже есть аккаунт?{' '}
-                  <Link href="/auth/login" className="text-vector-electric-blue hover:underline font-semibold">
+                  <Link href="/auth/login" className="text-blue-600 hover:underline font-semibold">
                     Войти
                   </Link>
                 </p>

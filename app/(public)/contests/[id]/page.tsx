@@ -50,6 +50,15 @@ export default async function ContestDetailPage({
                 {contest.status === 'upcoming' && 'Скоро'}
                 {contest.status === 'finished' && 'Завершён'}
               </span>
+              <span
+                className={`px-3 py-1 rounded-full text-sm font-medium ${
+                  contest.pricing_type === 'paid'
+                    ? 'bg-orange-100 text-orange-800'
+                    : 'bg-emerald-100 text-emerald-800'
+                }`}
+              >
+                {contest.pricing_type === 'paid' ? 'Платный' : 'Бесплатный'}
+              </span>
               <div className="flex items-center">
                 <Calendar className="h-4 w-4 mr-2" />
                 <span className="font-accent">

@@ -9,6 +9,7 @@ interface Contest {
   id: string
   title: string
   status: 'active' | 'upcoming' | 'finished'
+  pricing_type?: 'free' | 'paid'
   start_date: string
   end_date: string
   created_at: string
@@ -58,6 +59,9 @@ export default function AdminContestTable({ contests }: AdminContestTableProps) 
                 Статус
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Участие
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Даты проведения
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -85,6 +89,15 @@ export default function AdminContestTable({ contests }: AdminContestTableProps) 
                     {contest.status === 'active' && 'Активный'}
                     {contest.status === 'upcoming' && 'Предстоящий'}
                     {contest.status === 'finished' && 'Завершён'}
+                  </span>
+                </td>
+                <td className="px-6 py-4">
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                    contest.pricing_type === 'paid'
+                      ? 'bg-orange-100 text-orange-800'
+                      : 'bg-emerald-100 text-emerald-800'
+                  }`}>
+                    {contest.pricing_type === 'paid' ? 'Платный' : 'Бесплатный'}
                   </span>
                 </td>
                 <td className="px-6 py-4">

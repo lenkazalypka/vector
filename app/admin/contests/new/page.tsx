@@ -17,6 +17,7 @@ export default function NewContestPage() {
     start_date: '',
     end_date: '',
     status: 'active' as 'active' | 'upcoming' | 'finished',
+    pricing_type: 'free' as 'free' | 'paid',
     cover_file: null as File | null,
   })
 
@@ -73,6 +74,7 @@ export default function NewContestPage() {
           start_date: formData.start_date,
           end_date: formData.end_date,
           status: formData.status,
+          pricing_type: formData.pricing_type,
         })
 
       if (error) throw error
@@ -197,6 +199,20 @@ export default function NewContestPage() {
               <option value="active">Активный</option>
               <option value="upcoming">Предстоящий</option>
               <option value="finished">Завершённый</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Формат участия *
+            </label>
+            <select
+              className="input-field"
+              value={formData.pricing_type}
+              onChange={(e) => setFormData({ ...formData, pricing_type: e.target.value as 'free' | 'paid' })}
+            >
+              <option value="free">Бесплатный</option>
+              <option value="paid">Платный</option>
             </select>
           </div>
 

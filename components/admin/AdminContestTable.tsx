@@ -10,6 +10,8 @@ interface Contest {
   title: string
   status: 'active' | 'upcoming' | 'finished'
   pricing_type?: 'free' | 'paid'
+  entry_fee?: number | null
+  payment_qr_url?: string | null
   start_date: string
   end_date: string
   created_at: string
@@ -62,6 +64,12 @@ export default function AdminContestTable({ contests }: AdminContestTableProps) 
                 Участие
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Взнос
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                QR
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Даты проведения
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -99,6 +107,18 @@ export default function AdminContestTable({ contests }: AdminContestTableProps) 
                   }`}>
                     {contest.pricing_type === 'paid' ? 'Платный' : 'Бесплатный'}
                   </span>
+                </td>
+                <td className="px-6 py-4 text-sm text-gray-900">
+                  {contest.pricing_type === 'paid'
+                    ? `${contest.entry_fee ?? 0} ₽`
+                    : '—'}
+                </td>
+                <td className="px-6 py-4 text-sm text-gray-900">
+                  {contest.pricing_type === 'paid'
+                    ? contest.payment_qr_url
+                      ? 'Есть'
+                      : 'Нет'
+                    : '—'}
                 </td>
                 <td className="px-6 py-4">
                   <div className="text-sm text-gray-900">

@@ -6,14 +6,15 @@ import ContestGallery from '@/components/ContestGallery'
 export default async function ContestDetailPage({
   params,
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
+  const { id } = await params
   const supabase = await createClient()
   
   const { data: contest } = await supabase
     .from('contests')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (!contest) {
@@ -24,7 +25,7 @@ export default async function ContestDetailPage({
   const { data: photos } = await supabase
     .from('contest_photos')
     .select('*')
-    .eq('contest_id', params.id)
+    .eq('contest_id', id)
     .eq('approved', true)
     .order('uploaded_at', { ascending: false })
 
@@ -57,7 +58,9 @@ export default async function ContestDetailPage({
                     : 'bg-emerald-100 text-emerald-800'
                 }`}
               >
-                {contest.pricing_type === 'paid' ? 'Платный' : 'Бесплатный'}
+                {contest.pricing_type === 'paid'
+                  ? `Платный${contest.entry_fee ? ` · ${contest.entry_fee}₽` : ''}`
+                  : 'Бесплатный'}
               </span>
               <div className="flex items-center">
                 <Calendar className="h-4 w-4 mr-2" />
@@ -113,6 +116,18 @@ export default async function ContestDetailPage({
                 <span>Следите за результатами на этой странице</span>
               </li>
             </ul>
+            {contest.pricing_type === 'paid' && contest.payment_qr_url && (
+              <div className="mt-4 pt-4 border-t border-orange-200">
+                <p className="text-sm text-gray-700 mb-3">
+                  Оплата по статическому QR-коду: <strong>{contest.entry_fee} ₽</strong>
+                </p>
+                <img
+                  src={contest.payment_qr_url}
+                  alt="QR-код для оплаты участия"
+                  className="w-40 h-40 rounded-lg border border-orange-200 bg-white p-2"
+                />
+              </div>
+            )}
           </div>
 
           {/* Статистика */}

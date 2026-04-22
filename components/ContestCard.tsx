@@ -9,6 +9,8 @@ interface ContestCardProps {
   startDate: string
   endDate: string
   status: 'active' | 'upcoming' | 'finished'
+  pricingType?: 'free' | 'paid'
+  entryFee?: number | null
   participantCount: number
 }
 
@@ -20,6 +22,8 @@ export default function ContestCard({
   startDate,
   endDate,
   status,
+  pricingType = 'free',
+  entryFee,
   participantCount,
 }: ContestCardProps) {
   const statusColors = {
@@ -41,15 +45,26 @@ export default function ContestCard({
           </div>
         )}
         <div className="p-6">
-          <div className="flex justify-between items-start mb-4">
+          <div className="flex justify-between items-start mb-4 gap-3">
             <h3 className="text-xl font-semibold text-vector-deep-blue group-hover:text-vector-electric-blue transition-colors">
               {title}
             </h3>
-            <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusColors[status]}`}>
-              {status === 'active' && 'Идёт'}
-              {status === 'upcoming' && 'Скоро'}
-              {status === 'finished' && 'Завершён'}
-            </span>
+            <div className="flex flex-col items-end gap-2">
+              <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusColors[status]}`}>
+                {status === 'active' && 'Идёт'}
+                {status === 'upcoming' && 'Скоро'}
+                {status === 'finished' && 'Завершён'}
+              </span>
+              <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                pricingType === 'paid'
+                  ? 'bg-orange-100 text-orange-800'
+                  : 'bg-emerald-100 text-emerald-800'
+              }`}>
+                {pricingType === 'paid'
+                  ? `Платный${entryFee ? ` · ${entryFee}₽` : ''}`
+                  : 'Бесплатный'}
+              </span>
+            </div>
           </div>
 
           <p className="text-gray-600 mb-6 line-clamp-2">{description}</p>

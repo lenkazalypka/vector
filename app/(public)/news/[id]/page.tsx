@@ -5,14 +5,15 @@ import { Calendar } from 'lucide-react'
 export default async function NewsDetailPage({
   params,
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
+  const { id } = await params
   const supabase = await createClient()
   
   const { data: news } = await supabase
     .from('news')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (!news) {

@@ -312,6 +312,59 @@ export default function NewContestPage() {
             </>
           )}
 
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Формат участия *
+            </label>
+            <select
+              className="input-field"
+              value={formData.pricing_type}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  pricing_type: e.target.value as 'free' | 'paid',
+                  entry_fee: e.target.value === 'free' ? '' : formData.entry_fee,
+                  payment_qr_url: e.target.value === 'free' ? '' : formData.payment_qr_url,
+                })
+              }
+            >
+              <option value="free">Бесплатный</option>
+              <option value="paid">Платный</option>
+            </select>
+          </div>
+
+          {formData.pricing_type === 'paid' && (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Стоимость участия (₽) *
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  step="1"
+                  required
+                  className="input-field"
+                  value={formData.entry_fee}
+                  onChange={(e) => setFormData({ ...formData, entry_fee: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Ссылка на статический QR-код *
+                </label>
+                <input
+                  type="url"
+                  required
+                  className="input-field"
+                  placeholder="https://..."
+                  value={formData.payment_qr_url}
+                  onChange={(e) => setFormData({ ...formData, payment_qr_url: e.target.value })}
+                />
+              </div>
+            </>
+          )}
+
           <div className="flex justify-end space-x-4 pt-6 border-t">
             <button
               type="button"

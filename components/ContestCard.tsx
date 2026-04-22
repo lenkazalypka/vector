@@ -10,7 +10,6 @@ interface ContestCardProps {
   endDate: string
   status: 'active' | 'upcoming' | 'finished'
   pricingType?: 'free' | 'paid'
-  entryFee?: number | null
   participantCount: number
 }
 
@@ -23,7 +22,6 @@ export default function ContestCard({
   endDate,
   status,
   pricingType = 'free',
-  entryFee,
   participantCount,
 }: ContestCardProps) {
   const statusColors = {
@@ -60,9 +58,7 @@ export default function ContestCard({
                   ? 'bg-orange-100 text-orange-800'
                   : 'bg-emerald-100 text-emerald-800'
               }`}>
-                {pricingType === 'paid'
-                  ? `Платный${entryFee ? ` · ${entryFee}₽` : ''}`
-                  : 'Бесплатный'}
+                {pricingType === 'paid' ? 'Платный' : 'Бесплатный'}
               </span>
             </div>
           </div>

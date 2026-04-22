@@ -90,6 +90,8 @@ export default function ContestsPage() {
                 startDate={contest.start_date}
                 endDate={contest.end_date}
                 status={contest.status}
+                pricingType={contest.pricing_type || 'free'}
+                entryFee={contest.entry_fee}
                 participantCount={0}
               />
             ))}

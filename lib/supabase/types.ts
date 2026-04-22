@@ -65,6 +65,9 @@ export interface Database {
           start_date: string
           end_date: string
           status: 'active' | 'upcoming' | 'finished'
+          pricing_type: 'free' | 'paid'
+          entry_fee: number
+          payment_qr_url: string | null
           created_at: string
           created_by: string | null
         }
@@ -76,6 +79,9 @@ export interface Database {
           start_date: string
           end_date: string
           status?: 'active' | 'upcoming' | 'finished'
+          pricing_type?: 'free' | 'paid'
+          entry_fee?: number
+          payment_qr_url?: string | null
           created_at?: string
           created_by?: string | null
         }
@@ -87,6 +93,9 @@ export interface Database {
           start_date?: string
           end_date?: string
           status?: 'active' | 'upcoming' | 'finished'
+          pricing_type?: 'free' | 'paid'
+          entry_fee?: number
+          payment_qr_url?: string | null
           created_at?: string
           created_by?: string | null
         }
